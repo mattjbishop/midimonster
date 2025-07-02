@@ -11,3 +11,6 @@ __pycache__
 .vscode/
 deployment/
 local-configs/
+flux/
+*.dSYM
+.DS_Store
