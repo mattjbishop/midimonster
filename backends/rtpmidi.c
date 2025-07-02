@@ -419,6 +419,8 @@ static char* rtpmidi_type_name(uint8_t type){
 	switch(type){
 		case note:
 			return "note";
+		case note_off:
+			return "note_off";
 		case cc:
 			return "cc";
 		case pressure:
@@ -662,6 +664,13 @@ static int rtpmidi_configure_instance(instance* inst, char* option, char* value)
 		}
 		return mmbackend_strdup(&data->accept, value);
 	}
+	else if(!strcmp(option, "note-off")){
+		data->note_off = 0;
+		if(!strcmp(value, "true")){
+			data->note_off = 1;
+		}
+		return 0;
+	}
 
 	LOGPF("Unknown instance configuration option %s on instance %s", option, inst->name);
 	return 1;
@@ -713,6 +722,10 @@ static channel* rtpmidi_channel(instance* inst, char* spec, uint8_t flags){
 	if(!strncmp(next_token, "cc", 2)){
 		ident.fields.type = cc;
 		next_token += 2;
+	}
+	else if(!strncmp(next_token, "note_off", 8)){	// note_off needs to be checked first because of the way that strncomp is being used here
+		ident.fields.type = note_off;
+		next_token += 8;
 	}
 	else if(!strncmp(next_token, "note", 4)){
 		ident.fields.type = note;
@@ -1060,6 +1073,7 @@ static void rtpmidi_handle_epn(instance* inst, uint8_t chan, uint16_t control, u
 }
 
 static int rtpmidi_parse(instance* inst, uint8_t* frame, size_t bytes){
+	rtpmidi_instance_data* data = (rtpmidi_instance_data*) inst->impl;
 	uint16_t length = 0;
 	size_t offset = 1, decode_time = 0, command_bytes = 0;
 	uint8_t midi_status = 0;
@@ -1156,7 +1170,8 @@ static int rtpmidi_parse(instance* inst, uint8_t* frame, size_t bytes){
 			}
 
 			//fix-up note off events
-			if(ident.fields.type == 0x80){
+			if (data->note_off == 0 && ident.fields.type == note_off) {
+//			if(ident.fields.type == 0x80){
 				ident.fields.type = note;
 				val.normalised = 0;
 				val.raw.u64 = 0;

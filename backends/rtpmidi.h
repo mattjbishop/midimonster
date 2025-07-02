@@ -39,6 +39,7 @@ static int rtpmidi_shutdown(size_t n, instance** inst);
 
 enum /*_rtpmidi_channel_type*/ {
 	none = 0,
+	note_off = 0x80,
 	note = 0x90,
 	pressure = 0xA0,
 	cc = 0xB0,
@@ -98,6 +99,9 @@ typedef struct /*_rtpmidi_instance_data*/ {
 
 	//direct mode config
 	uint8_t learn_peers;
+
+	// note-off behaviour
+	uint8_t note_off; // if false (default), note-off events are sent as note on with value 0
 } rtpmidi_instance_data;
 
 typedef struct /*rtpmidi_invited_peer*/ {

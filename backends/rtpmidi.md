@@ -39,6 +39,7 @@ Common instance configuration parameters
 | `mode`	| `direct`		| none			| Instance session management mode (`direct` or `apple`) |
 | `peer`	| `10.1.2.3 9001`	| none			| MIDI session peer, may be specified multiple times. Bypasses session discovery (but still performs session negotiation) |
 | `epn-tx`	| `short`		| `full`		| Configure whether to clear the active parameter number after transmitting an `nrpn` or `rpn` parameter. |
+| `note-off`	| `true`		| `false`		| If true, process note-off messages separately |
 
 `direct` mode instance configuration parameters
 
@@ -60,7 +61,8 @@ Common instance configuration parameters
 The `rtpmidi` backend supports mapping different MIDI events to MIDIMonster channels. The currently supported event types are
 
 * `cc` - Control Changes
-* `note` - Note On/Off messages (also known as note velocity)
+* `note` - Note On messages (also known as note velocity). If note-off is set to false, a zero value indicates a Note Off message
+* 'note_off' - Note Off messages (where note-off is set to true in the instance configuration) 
 * `pressure` - Note pressure/aftertouch messages
 * `aftertouch` - Channel-wide aftertouch messages
 * `pitch` - Channel pitchbend messages
