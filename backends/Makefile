@@ -25,6 +25,14 @@ CFLAGS += -fPIC -I../ -Wall -Wpedantic
 CXXFLAGS += -fPIC -I../
 LDFLAGS += -shared
 
+# MB: fix for OS X
+MD5_INCLUDE = /opt/homebrew/Cellar/openssl@3/3.5.0/include
+JACK_INCLUDE = /opt/homebrew/opt/jack/include
+JACK_LIB = /opt/homebrew/opt/jack/lib  
+
+CFLAGS += -I$(MD5_INCLUDE) -I$(JACK_INCLUDE)
+LDFLAGS += -L$(JACK_LIB)
+
 # Build Linux backends if possible
 ifeq ($(SYSTEM),Linux)
 BACKENDS += $(LINUX_BACKENDS)
