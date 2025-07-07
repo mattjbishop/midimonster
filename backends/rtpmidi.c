@@ -793,23 +793,29 @@ static size_t rtpmidi_push_midi(uint8_t* payload, size_t bytes_left, uint8_t typ
 
 static int rtpmidi_set(instance* inst, size_t num, channel** c, channel_value* v){
 	rtpmidi_instance_data* data = (rtpmidi_instance_data*) inst->impl;
-	uint8_t frame[RTPMIDI_PACKET_BUFFER] = "";
+	uint8_t frame[RTPMIDI_PACKET_BUFFER] = {0};
 	rtpmidi_header* rtp_header = (rtpmidi_header*) frame;
 	rtpmidi_command_header* command_header = (rtpmidi_command_header*) (frame + sizeof(rtpmidi_header));
 	size_t command_length = 0, offset = sizeof(rtpmidi_header) + sizeof(rtpmidi_command_header), u = 0;
-	uint8_t* payload = frame + offset;
+	// uint8_t* payload = frame + offset;
+	uint8_t* payload = frame;
 	rtpmidi_channel_ident ident;
 
 	rtp_header->vpxcc = RTPMIDI_HEADER_MAGIC;
 	//some receivers seem to have problems reading rfcs and interpreting the marker bit correctly
 	rtp_header->mpt = (data->mode == apple ? 0 : 0x80) | RTPMIDI_HEADER_TYPE;
 	rtp_header->sequence = htobe16(data->sequence++);
-	rtp_header->timestamp = mm_timestamp() * 10; //just assume 100msec resolution because rfc4695 handwaves it
+	rtp_header->timestamp = htobe32(mm_timestamp() * 10); //just assume 100msec resolution because rfc4695 handwaves it
+
+	LOGPF("timestamp: mm=0x%02X, ts=0x%d", mm_timestamp(), mm_timestamp);
+
 	rtp_header->ssrc = htobe32(data->ssrc);
 
 	//midi command section header
 	//TODO enable the journal bit here
 	command_header->flags = 0xA0; //extended length header, first entry in list has dtime
+
+	// command_header->flags = 0x80; 
 
 	//midi list
 	for(u = 0; u < num; u++){
@@ -854,6 +860,8 @@ static int rtpmidi_set(instance* inst, size_t num, channel** c, channel_value* v
 	command_header->length = ((offset - sizeof(rtpmidi_header) - sizeof(rtpmidi_command_header)) & 0xFF);
 
 	//TODO journal section
+
+	LOGPF("timestamp check: ts=0x%02X", rtp_header->timestamp);
 
 	for(u = 0; u < data->peers; u++){
 		if(data->peer[u].active && data->peer[u].connected){
@@ -1496,7 +1504,7 @@ static int rtpmidi_service(){
 		.ssrc = 0,
 		.count = 0,
 		.timestamp = {
-			mm_timestamp() * 10
+			htobe64(mm_timestamp() * 10)
 		}
 	};
 
