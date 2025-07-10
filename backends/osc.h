@@ -65,6 +65,9 @@ typedef struct /*_osc_instance_data*/ {
 
 	//peer fd
 	int fd;
+
+	// repeat behaviour
+	uint8_t repeater;
 } osc_instance_data;
 
 typedef union {

@@ -518,6 +518,13 @@ static int osc_configure_instance(instance* inst, char* option, char* value){
 		}
 		return 0;
 	}
+	else if(!strcmp(option, "repeat")){
+		data->repeater = 0;
+		if(!strcmp(value, "true")){
+			data->repeater = 1;
+		}
+		return 0;
+	}
 	else if(!strcmp(option, "bind")){
 		mmbackend_parse_hostspec(value, &host, &port, &fd_opts);
 		if(!host || !port){
@@ -732,12 +739,12 @@ static int osc_set(instance* inst, size_t num, channel** c, channel_value* v){
 			continue;
 		}
 
-		//only output on change
+		//only output on change or if repeat has been set to true in the instance config
 		current = osc_parameter_denormalise(data->channel[ident.fields.channel].type[ident.fields.parameter],
 				data->channel[ident.fields.channel].min[ident.fields.parameter],
 				data->channel[ident.fields.channel].max[ident.fields.parameter],
 				v[evt]);
-		if(memcmp(&current, &data->channel[ident.fields.channel].out[ident.fields.parameter], sizeof(current))){
+		if((memcmp(&current, &data->channel[ident.fields.channel].out[ident.fields.parameter], sizeof(current))) || (data->repeater == 1)) {
 			//update current value
 			data->channel[ident.fields.channel].out[ident.fields.parameter] = current;
 			//mark channel
