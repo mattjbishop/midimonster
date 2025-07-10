@@ -1173,7 +1173,6 @@ static int rtpmidi_parse(instance* inst, uint8_t* frame, size_t bytes){
 
 			//fix-up note off events
 			if (data->note_off == 0 && ident.fields.type == note_off) {
-//			if(ident.fields.type == 0x80){
 				ident.fields.type = note;
 				val.normalised = 0;
 				val.raw.u64 = 0;
